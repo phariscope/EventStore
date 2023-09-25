@@ -1,0 +1,12 @@
+#!/bin/sh
+
+docker run \
+    --init \
+    --rm \
+    -ti \
+    --name php-ddd-event-running-script \
+    -v "$(pwd)/bin/docker/php/php.ini:/usr/local/etc/php/php.ini" \
+    -v "$PWD":"$PWD" \
+    --user 1000:1000 \
+    -w "$PWD" \
+    php-ddd-event php $@

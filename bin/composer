@@ -1,0 +1,14 @@
+#!/bin/bash
+echo ${COMPOSER_HOME:-$HOME/.composer}
+if [ -t 0 ] ; then
+    moinsit='-it'
+else
+    moinsit=''
+fi
+docker run ${moinsit} --rm \
+  --volume $PWD:/app \
+  --user 1000:1000 \
+  -ti \
+  --name composer-running-script \
+  -v "$PWD":/usr/src \
+  composer-nextsign composer $@
