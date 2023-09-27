@@ -6,7 +6,6 @@ use Phariscope\Event\EventAbstract;
 use Phariscope\EventStore\Exceptions\EventNotFoundException;
 use Phariscope\EventStore\EventStored;
 use Phariscope\EventStore\StoreInterface;
-use Safe\DateTimeImmutable;
 
 class StoreEventInMemory implements StoreInterface
 {
@@ -27,7 +26,7 @@ class StoreEventInMemory implements StoreInterface
     /**
      * @return array<int,EventStored>
      */
-    public function allStoredEventsSince(DateTimeImmutable|int $past): array
+    public function allStoredEventsSince(\DateTimeImmutable|int $past): array
     {
         $result = [];
         if (is_int($past)) {

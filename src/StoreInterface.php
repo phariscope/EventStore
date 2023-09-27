@@ -4,7 +4,6 @@ namespace Phariscope\EventStore;
 
 use Phariscope\Event\EventAbstract;
 use Phariscope\EventStore\Exceptions\EventNotFoundException;
-use Safe\DateTimeImmutable;
 
 interface StoreInterface
 {
@@ -13,7 +12,7 @@ interface StoreInterface
     /**
      * @return array<int,EventStored>
      */
-    public function allStoredEventsSince(DateTimeImmutable|int $past): array;
+    public function allStoredEventsSince(\DateTimeImmutable|int $past): array;
 
     /**
      * @throws EventNotFoundException

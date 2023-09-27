@@ -5,13 +5,12 @@ namespace Phariscope\EventStore\Tests\Persistence;
 use Phariscope\EventStore\Exceptions\EventNotFoundException;
 use Phariscope\EventStore\Persistence\StoreEventInMemory;
 use PHPUnit\Framework\TestCase;
-use Safe\DateTimeImmutable;
 
 class StoreEventInMemoryTest extends TestCase
 {
     public function testAllStoredEventsSinceDate(): void
     {
-        $debut = new DateTimeImmutable();
+        $debut = new \DateTimeImmutable();
         $store = new StoreEventInMemory();
         for ($i = 1; $i <= 15; $i++) {
             $event = new EventSent("unEvenementAPublier" . $i);
