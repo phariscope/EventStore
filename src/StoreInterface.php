@@ -10,12 +10,12 @@ interface StoreInterface
     public function append(EventAbstract $event): void;
 
     /**
-     * @return array<int,EventStored>
+     * @return array<int,StoredEvent>
      */
     public function allStoredEventsSince(\DateTimeImmutable|int $past): array;
 
     /**
      * @throws EventNotFoundException
      */
-    public function lastEvent(): EventStored;
+    public function lastEvent(): StoredEvent;
 }

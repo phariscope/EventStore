@@ -4,19 +4,19 @@ namespace Phariscope\EventStore\Persistence;
 
 use Phariscope\Event\EventAbstract;
 use Phariscope\EventStore\Exceptions\EventNotFoundException;
-use Phariscope\EventStore\EventStored;
+use Phariscope\EventStore\StoredEvent;
 use Phariscope\EventStore\StoreInterface;
 
 class StoreEventInMemory implements StoreInterface
 {
-    /** @var array<int,EventStored> $storedEvents */
+    /** @var array<int,StoredEvent> $storedEvents */
     private array $storedEvents = [];
 
     public function append(EventAbstract $event): void
     {
         /** @var int $id */
         $id = hexdec(uniqid()); // l'id est unique et plus grand que tous les id ayant été générés auparavant
-        $storedEvent = new EventStored(
+        $storedEvent = new StoredEvent(
             $event,
             $id
         );
@@ -24,7 +24,7 @@ class StoreEventInMemory implements StoreInterface
     }
 
     /**
-     * @return array<int,EventStored>
+     * @return array<int,StoredEvent>
      */
     public function allStoredEventsSince(\DateTimeImmutable|int $past): array
     {
@@ -44,7 +44,7 @@ class StoreEventInMemory implements StoreInterface
         return $result;
     }
 
-    public function lastEvent(): EventStored
+    public function lastEvent(): StoredEvent
     {
         $last = end($this->storedEvents) ?: throw new EventNotFoundException();
 
