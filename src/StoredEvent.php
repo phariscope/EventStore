@@ -8,7 +8,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class EventStored extends EventAbstract
+class StoredEvent extends EventAbstract
 {
     private int $eventId;
     private string $eventBody;
