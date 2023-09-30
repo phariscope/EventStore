@@ -11,4 +11,4 @@ docker run ${moinsit} --rm \
   -ti \
   --name composer-running-script \
   -v "$PWD":/usr/src \
-  composer-nextsign composer $@
+  composer:2.5.5 composer $@
