@@ -24,4 +24,9 @@ abstract class PersistEventSubscriberAbstract implements EventSubscriber
     {
         return true;
     }
+
+    public function getStore(): StoreInterface
+    {
+        return $this->store;
+    }
 }
