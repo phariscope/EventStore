@@ -6,13 +6,12 @@ composer require phariscope/event-store
 
 # Usage
 
-No direct usage. Use this package only if you want to develop your own event storage component.
+There is no direct usage for this package. You should use this package only if you want to develop your own event storage component.
 
 To develop your own storage:
 
-* Implement the StoreInterface.
-* Create your subscriber by extending PersistEventSubscriberAbstract.
-* Register your subscriber when necessary.
+1. Create your own Store implementing the StoreInterface.
+2. Create your subscriber by extending PersistEventSubscriberAbstract, which can be constructed with your store.
 
 A sample of the StoreInterface is provided with StoreEventInMemory. You can use it for testing purposes.
 
@@ -33,7 +32,7 @@ A sample of the StoreInterface is provided with StoreEventInMemory. You can use 
 bin/phpunit
 ```
 
-with Test Developpment Driven (thanks Kent Beck and the others), good practices (thanks R.Martin and the others)
+Using Test-Driven Development (TDD) principles (thanks to Kent Beck and others), following good practices (thanks to Uncle Bob and others) and the great book 'DDD in PHP' by C. Buenosvinos, C. Soronellas, K. Akbary
 
 ## Quality
 
