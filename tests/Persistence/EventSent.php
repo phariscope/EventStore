@@ -2,12 +2,12 @@
 
 namespace Phariscope\EventStore\Tests\Persistence;
 
-use Phariscope\Event\EventAbstract;
+use Phariscope\Event\Psr14\Event;
 
 /**
  * EventSended : nom + verbe au passé pour nommer vos evennements
  */
-class EventSent extends EventAbstract
+class EventSent extends Event
 {
     private string $id;
 

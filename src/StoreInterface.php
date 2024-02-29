@@ -2,12 +2,12 @@
 
 namespace Phariscope\EventStore;
 
-use Phariscope\Event\EventAbstract;
+use Phariscope\Event\Psr14\Event;
 use Phariscope\EventStore\Exceptions\EventNotFoundException;
 
 interface StoreInterface
 {
-    public function append(EventAbstract $event): void;
+    public function append(Event $event): void;
 
     /**
      * @return array<int,StoredEvent>

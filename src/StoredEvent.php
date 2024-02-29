@@ -2,20 +2,20 @@
 
 namespace Phariscope\EventStore;
 
-use Phariscope\Event\EventAbstract;
+use Phariscope\Event\Psr14\Event;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class StoredEvent extends EventAbstract
+class StoredEvent extends Event
 {
     private int $eventId;
     private string $eventBody;
     private string $typeName;
 
     public function __construct(
-        EventAbstract $eventAbstract,
+        Event $eventAbstract,
         ?int $id = null
     ) {
         parent::__construct($eventAbstract->occurredOn());
@@ -26,7 +26,7 @@ class StoredEvent extends EventAbstract
         }
     }
 
-    private function serializeInJson(EventAbstract $event): string
+    private function serializeInJson(Event $event): string
     {
         $encoders = [new JsonEncoder()];
         $normalizers = [new PropertyNormalizer(), new DateTimeNormalizer()];

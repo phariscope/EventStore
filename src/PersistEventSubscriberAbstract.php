@@ -2,10 +2,10 @@
 
 namespace Phariscope\EventStore;
 
-use Phariscope\Event\EventAbstract;
-use Phariscope\Event\EventSubscriber;
+use Phariscope\Event\Psr14\Event;
+use Phariscope\Event\Psr14\ListenerInterface;
 
-abstract class PersistEventSubscriberAbstract implements EventSubscriber
+abstract class PersistEventSubscriberAbstract implements ListenerInterface
 {
     private StoreInterface $store;
 
@@ -14,13 +14,13 @@ abstract class PersistEventSubscriberAbstract implements EventSubscriber
         $this->store = $store;
     }
 
-    public function handle(EventAbstract $event): bool
+    public function handle(Event $event): bool
     {
         $this->store->append($event);
         return true;
     }
 
-    public function isSubscribedTo(EventAbstract $event): bool
+    public function isSubscribedTo(Event $event): bool
     {
         return true;
     }

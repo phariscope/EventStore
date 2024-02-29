@@ -2,7 +2,7 @@
 
 namespace Phariscope\EventStore\Persistence;
 
-use Phariscope\Event\EventAbstract;
+use Phariscope\Event\Psr14\Event;
 use Phariscope\EventStore\Exceptions\EventNotFoundException;
 use Phariscope\EventStore\StoredEvent;
 use Phariscope\EventStore\StoreInterface;
@@ -12,7 +12,7 @@ class StoreEventInMemory implements StoreInterface
     /** @var array<int,StoredEvent> $storedEvents */
     private array $storedEvents = [];
 
-    public function append(EventAbstract $event): void
+    public function append(Event $event): void
     {
         /** @var int $id */
         $id = hexdec(uniqid()); // l'id est unique et plus grand que tous les id ayant été générés auparavant
