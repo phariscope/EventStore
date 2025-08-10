@@ -32,4 +32,33 @@ class StoredEventTest extends TestCase
         $this->assertTrue($storedEvent1->eventId() > 0);
         $this->assertTrue($storedEvent2->eventId() > $storedEvent1->eventId());
     }
+
+    public function testCreateStoredEventWithInvalidId(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Event ID must be a positive integer');
+
+        $event = new EventSent("invalidId");
+        new StoredEvent($event, -1);
+    }
+
+    public function testCreateStoredEventWithZeroId(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Event ID must be a positive integer');
+
+        $event = new EventSent("zeroId");
+        new StoredEvent($event, 0);
+    }
+
+    public function testStoredEventProperties(): void
+    {
+        $event = new EventSent("testId");
+        $storedEvent = new StoredEvent($event, 42);
+
+        $this->assertEquals(42, $storedEvent->eventId());
+        $this->assertEquals("Phariscope\EventStore\Tests\Persistence\EventSent", $storedEvent->typeName());
+        $this->assertStringContainsString('testId', $storedEvent->getEventBody());
+        $this->assertJson($storedEvent->getEventBody());
+    }
 }

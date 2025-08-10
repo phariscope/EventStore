@@ -27,6 +27,10 @@ class StoreEventInMemory implements StoreInterface
      */
     public function allStoredEventsSince(\DateTimeImmutable|int $past): array
     {
+        if (is_int($past) && $past < 0) {
+            throw new \InvalidArgumentException('Past parameter must be a positive integer when using int type');
+        }
+
         $result = [];
         if (is_int($past)) {
             $offset = count($this->storedEvents) - $past;
