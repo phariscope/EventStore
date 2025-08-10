@@ -15,7 +15,7 @@ To develop your own storage:
 
 A sample of the StoreInterface is provided with StoreEventInMemory. You can use it for testing purposes.
 
-# To Contribut to pharsicope/Event
+# To Contribute to phariscope/Event
 
 ## Requirements
 

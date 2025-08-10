@@ -22,4 +22,14 @@ class StoredEventTest extends TestCase
             $storedEvent->getEventBody()
         );
     }
+
+    public function testCreateStoredEventWithAutoId(): void
+    {
+        $event = new EventSent("autoId");
+        $storedEvent1 = new StoredEvent($event);
+        $storedEvent2 = new StoredEvent($event);
+
+        $this->assertTrue($storedEvent1->eventId() > 0);
+        $this->assertTrue($storedEvent2->eventId() > $storedEvent1->eventId());
+    }
 }

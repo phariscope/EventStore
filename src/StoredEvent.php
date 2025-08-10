@@ -13,6 +13,7 @@ class StoredEvent extends Event
     private int $eventId;
     private string $eventBody;
     private string $typeName;
+    private static int $nextId = 1;
 
     public function __construct(
         Event $eventAbstract,
@@ -21,9 +22,7 @@ class StoredEvent extends Event
         parent::__construct($eventAbstract->occurredOn());
         $this->eventBody = $this->serializeInJson($eventAbstract);
         $this->typeName = get_class($eventAbstract);
-        if ($id !== null) {
-            $this->eventId = $id;
-        }
+        $this->eventId = $id ?? self::$nextId++;
     }
 
     private function serializeInJson(Event $event): string

@@ -11,14 +11,13 @@ class StoreEventInMemory implements StoreInterface
 {
     /** @var array<int,StoredEvent> $storedEvents */
     private array $storedEvents = [];
+    private int $nextId = 1;
 
     public function append(Event $event): void
     {
-        /** @var int $id */
-        $id = hexdec(uniqid()); // l'id est unique et plus grand que tous les id ayant été générés auparavant
         $storedEvent = new StoredEvent(
             $event,
-            $id
+            $this->nextId++
         );
         $this->storedEvents[$storedEvent->eventId()] = $storedEvent;
     }

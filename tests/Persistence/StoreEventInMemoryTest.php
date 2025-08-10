@@ -72,4 +72,18 @@ class StoreEventInMemoryTest extends TestCase
         $store = new StoreEventInMemory();
         $se = $store->lastEvent();
     }
+
+    public function testEventIdsAreIncremental(): void
+    {
+        $store = new StoreEventInMemory();
+        $event1 = new EventSent("premier");
+        $event2 = new EventSent("second");
+
+        $store->append($event1);
+        $store->append($event2);
+
+        $events = $store->allStoredEventsSince(2);
+        $this->assertEquals(2, count($events));
+        $this->assertTrue($events[1]->eventId() > $events[0]->eventId());
+    }
 }
