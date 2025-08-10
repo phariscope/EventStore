@@ -56,6 +56,16 @@ class StoreEventInMemoryTest extends TestCase
         $this->assertEquals(2, count($events));
     }
 
+    public function testAllStoredEventsSinceZeroReturnsEmpty(): void
+    {
+        $store = new StoreEventInMemory();
+        for ($i = 1; $i <= 3; $i++) {
+            $store->append(new EventSent("e{$i}"));
+        }
+        $events = $store->allStoredEventsSince(0);
+        $this->assertCount(0, $events);
+    }
+
     public function testLastEvent(): void
     {
         $event = new EventSent("dernier");
@@ -125,5 +135,15 @@ class StoreEventInMemoryTest extends TestCase
         // Test last event
         $lastEvent = $store->lastEvent();
         $this->assertStringContainsString('third', $lastEvent->getEventBody());
+    }
+
+    public function testAllStoredEventsSinceWithNegativeInteger(): void
+    {
+        // Test the uncovered negative parameter validation in StoreEventInMemory
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Past parameter must be a positive integer when using int type');
+
+        $store = new StoreEventInMemory();
+        $store->allStoredEventsSince(-1);
     }
 }

@@ -53,4 +53,40 @@ class StoreEventInMemory implements StoreInterface
 
         return $last;
     }
+
+    /**
+     * @return array<int,StoredEvent>
+     */
+    public function getEventsByType(string $eventType, \DateTimeImmutable|int|null $since = null): array
+    {
+        if (empty($eventType)) {
+            throw new \InvalidArgumentException('Event type cannot be empty');
+        }
+
+        $filteredEvents = array_filter($this->storedEvents, function (StoredEvent $event) use ($eventType) {
+            return $event->typeName() === $eventType;
+        });
+
+        if ($since === null) {
+            return array_values($filteredEvents);
+        }
+
+        // Apply additional filtering based on $since parameter
+        if (is_int($since)) {
+            if ($since < 0) {
+                throw new \InvalidArgumentException('Since parameter must be a positive integer when using int type');
+            }
+            return array_values(array_slice($filteredEvents, -$since, $since, true));
+        }
+
+        // Filter by date
+        $result = [];
+        foreach ($filteredEvents as $event) {
+            if ($event->occurredOn() >= $since) {
+                $result[] = $event;
+            }
+        }
+
+        return $result;
+    }
 }

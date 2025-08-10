@@ -5,6 +5,7 @@ namespace Phariscope\EventStore;
 use Phariscope\Event\Psr14\Event;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
@@ -39,13 +40,27 @@ class StoredEvent extends Event
     {
         try {
             $encoders = [new JsonEncoder()];
-            $normalizers = [new PropertyNormalizer(), new DateTimeNormalizer()];
+            $normalizers = [new JsonSerializableNormalizer(), new PropertyNormalizer(), new DateTimeNormalizer()];
 
             $serializer = new Serializer($normalizers, $encoders);
+            // Pre-validate custom jsonSerialize() even if interface is not implemented
+            if (\is_callable([$event, 'jsonSerialize'])) {
+                try {
+                    /** @var mixed $jsonSerializableValue */
+                    $jsonSerializableValue = \call_user_func([$event, 'jsonSerialize']);
+                } catch (\Throwable $t) {
+                    throw new \RuntimeException('Failed to serialize event: ' . $t->getMessage(), 0, $t);
+                }
+
+                if ($jsonSerializableValue === null || $jsonSerializableValue === '' || $jsonSerializableValue === []) {
+                    throw new \RuntimeException('Failed to serialize event: Serialization resulted in empty content');
+                }
+            }
+
             $result = $serializer->serialize($event, 'json');
 
-            if (empty($result)) {
-                throw new \RuntimeException('Serialization resulted in empty content');
+            if ($result === 'null' || trim($result) === '') {
+                throw new \RuntimeException('Failed to serialize event: Serialization resulted in empty content');
             }
 
             return $result;

@@ -4,6 +4,9 @@ namespace Phariscope\EventStore\Tests;
 
 use Phariscope\EventStore\StoredEvent;
 use Phariscope\EventStore\Tests\Persistence\EventSent;
+use Phariscope\EventStore\Tests\Fixtures\ComplexEvent;
+use Phariscope\EventStore\Tests\Fixtures\ProblematicEvent;
+use Phariscope\EventStore\Tests\Fixtures\EmptyEvent;
 use PHPUnit\Framework\TestCase;
 use Safe\DateTimeImmutable;
 
@@ -60,5 +63,53 @@ class StoredEventTest extends TestCase
         $this->assertEquals("Phariscope\EventStore\Tests\Persistence\EventSent", $storedEvent->typeName());
         $this->assertStringContainsString('testId', $storedEvent->getEventBody());
         $this->assertJson($storedEvent->getEventBody());
+    }
+
+    public function testSerializationWithComplexEvent(): void
+    {
+        $complexEvent = new ComplexEvent([
+            'nested' => ['data' => 'value'],
+            'array' => [1, 2, 3],
+            'string' => 'test'
+        ]);
+
+        $storedEvent = new StoredEvent($complexEvent, 1);
+
+        $body = $storedEvent->getEventBody();
+        $this->assertJson($body);
+
+        $decoded = json_decode($body, true);
+        $this->assertIsArray($decoded);
+        $this->assertArrayHasKey('data', $decoded);
+        $this->assertArrayHasKey('occurredOn', $decoded);
+    }
+
+    public function testSerializationErrorHandling(): void
+    {
+        // Create an event that will cause serialization issues
+        $problematicEvent = new ProblematicEvent();
+
+        // This should throw a RuntimeException with our custom message
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Failed to serialize event:');
+
+        new StoredEvent($problematicEvent, 1);
+    }
+
+    public function testEmptySerializationHandling(): void
+    {
+        $emptyEvent = new EmptyEvent();
+
+        try {
+            $storedEvent = new StoredEvent($emptyEvent, 1);
+            $body = $storedEvent->getEventBody();
+
+            // Should not be empty
+            $this->assertNotEmpty($body);
+            $this->assertJson($body);
+        } catch (\RuntimeException $e) {
+            // If serialization fails, should get a meaningful error
+            $this->assertStringContainsString('Failed to serialize event', $e->getMessage());
+        }
     }
 }

@@ -13,7 +13,17 @@ To develop your own storage:
 1. Create your own Store implementing the StoreInterface.
 2. Create your subscriber by extending PersistEventSubscriberAbstract, which can be constructed with your store.
 
-A sample of the StoreInterface is provided with StoreEventInMemory. You can use it for testing purposes.
+Multiple implementations of the StoreInterface are provided:
+
+- **StoreEventInMemory**: In-memory storage for testing and development
+- **StoreEventInDatabase**: Persistent database storage using PDO  
+- **StoreEventWithMetrics**: Decorator adding performance monitoring to any store
+
+Additional features include:
+- **Event versioning** with VersionedEvent for schema evolution
+- **Performance metrics** tracking with EventStoreMetrics
+- **Event filtering** by type and time ranges
+- **Comprehensive API documentation** in docs/API.md
 
 # To Contribute to phariscope/Event
 

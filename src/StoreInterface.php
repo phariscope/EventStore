@@ -46,11 +46,20 @@ interface StoreInterface
      */
     public function allStoredEventsSince(\DateTimeImmutable|int $past): array;
 
-    /**
+        /**
      * Returns the most recently stored event.
      *
      * @return StoredEvent The last stored event
      * @throws EventNotFoundException When no events exist in the store
      */
     public function lastEvent(): StoredEvent;
+
+    /**
+     * Retrieves stored events filtered by event type.
+     *
+     * @param string $eventType The fully qualified class name of the event type
+     * @param \DateTimeImmutable|int|null $since Optional filter for events since a specific time/count
+     * @return array<int,StoredEvent> Array of stored events of the specified type
+     */
+    public function getEventsByType(string $eventType, \DateTimeImmutable|int|null $since = null): array;
 }
