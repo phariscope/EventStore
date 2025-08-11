@@ -19,6 +19,97 @@ Multiple implementations of the StoreInterface are provided:
 - **StoreEventInDatabase**: Persistent database storage using PDO  
 - **StoreEventWithMetrics**: Decorator adding performance monitoring to any store
 
+### Using the SQLite persistence listener
+
+A ready-to-use listener is provided to persist every event into a SQLite database (or any PDO-supported database) using `StoreEventInDatabase` under the hood.
+
+Prerequisites:
+- PHP with `pdo_sqlite` extension enabled (or another PDO driver if you use a different DBMS)
+
+Example:
+
+```php
+use Phariscope\EventStore\Persistence\PersistEventInDatabaseSubscriber;
+
+// 1) Create a PDO connection (SQLite examples)
+$pdo = new PDO('sqlite:/absolute/path/to/events.sqlite');
+// or in-memory for tests/dev: new PDO('sqlite::memory:');
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+// 2) Create the persistence listener (table auto-created if missing)
+$persist = new PersistEventInDatabaseSubscriber($pdo, 'stored_events');
+
+// 3) Use it as a PSR-14 listener/subscriber in your event system
+// Registration depends on your dispatcher implementation.
+// You can also invoke it directly:
+// $persist->handle($yourEvent);
+EventPublisher::instance()->subscribe($persist);
+
+// 4) Access the underlying store when needed
+$store = $persist->getStore();
+
+// Fetch the last 10 stored events
+$lastTen = $store->allStoredEventsSince(10);
+
+// Fetch all events of a given type (optionally since a datetime or last N)
+// $eventsByType = $store->getEventsByType(YourEvent::class);
+```
+
+Notes:
+- The table is created automatically with the name you provide (default: `stored_events`).
+- SQLite DSN formats:
+  - `sqlite::memory:` for in-memory
+  - `sqlite:/absolute/path/to/file.sqlite` for file-backed
+
+### YAML configuration
+
+You can configure the SQLite path and table name via a YAML file and build the listener from it.
+
+Example `config/event_store.yaml`:
+
+```yaml
+event_store:
+  sqlite_path: "/absolute/path/to/events.sqlite"  # or ":memory:" for in-memory
+  table_name: "stored_events"                      # optional (default: stored_events)
+```
+
+Bootstrap from configuration:
+
+```php
+use Phariscope\EventStore\Config\EventStoreConfiguration;
+use Phariscope\Event\Psr14\EventPublisher;
+
+$config = EventStoreConfiguration::fromFile(__DIR__ . '/config/event_store.yaml');
+$subscriber = $config->createSubscriber();
+
+EventPublisher::instance()->subscribe($subscriber);
+```
+
+### Symfony Bundle integration
+
+If you are using Symfony, enable the bundle and configure it under `config/packages/event_store.yaml`:
+
+1) Register the bundle (Symfony Flex may do this automatically):
+```php
+// config/bundles.php
+return [
+    // ...
+    Phariscope\EventStore\Bridge\Symfony\EventStoreBundle::class => ['all' => true],
+];
+```
+
+2) Configure the package:
+```yaml
+# config/packages/event_store.yaml
+event_store:
+  sqlite_path: "/absolute/path/to/events.sqlite"  # or ":memory:"
+  table_name: "stored_events"                      # optional
+```
+
+Services exposed:
+- `phariscope_event_store.pdo`: configured `PDO` instance
+- `phariscope_event_store.subscriber`: `PersistEventInDatabaseSubscriber`
+
 Additional features include:
 - **Event versioning** with VersionedEvent for schema evolution
 - **Performance metrics** tracking with EventStoreMetrics
