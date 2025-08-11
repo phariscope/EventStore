@@ -11,14 +11,13 @@ class StoreEventInMemory implements StoreInterface
 {
     /** @var array<int,StoredEvent> $storedEvents */
     private array $storedEvents = [];
+    private int $nextId = 1;
 
     public function append(Event $event): void
     {
-        /** @var int $id */
-        $id = hexdec(uniqid()); // l'id est unique et plus grand que tous les id ayant été générés auparavant
         $storedEvent = new StoredEvent(
             $event,
-            $id
+            $this->nextId++
         );
         $this->storedEvents[$storedEvent->eventId()] = $storedEvent;
     }
@@ -28,6 +27,10 @@ class StoreEventInMemory implements StoreInterface
      */
     public function allStoredEventsSince(\DateTimeImmutable|int $past): array
     {
+        if (is_int($past) && $past < 0) {
+            throw new \InvalidArgumentException('Past parameter must be a positive integer when using int type');
+        }
+
         $result = [];
         if (is_int($past)) {
             $offset = count($this->storedEvents) - $past;
@@ -49,5 +52,41 @@ class StoreEventInMemory implements StoreInterface
         $last = end($this->storedEvents) ?: throw new EventNotFoundException();
 
         return $last;
+    }
+
+    /**
+     * @return array<int,StoredEvent>
+     */
+    public function getEventsByType(string $eventType, \DateTimeImmutable|int|null $since = null): array
+    {
+        if (empty($eventType)) {
+            throw new \InvalidArgumentException('Event type cannot be empty');
+        }
+
+        $filteredEvents = array_filter($this->storedEvents, function (StoredEvent $event) use ($eventType) {
+            return $event->typeName() === $eventType;
+        });
+
+        if ($since === null) {
+            return array_values($filteredEvents);
+        }
+
+        // Apply additional filtering based on $since parameter
+        if (is_int($since)) {
+            if ($since < 0) {
+                throw new \InvalidArgumentException('Since parameter must be a positive integer when using int type');
+            }
+            return array_values(array_slice($filteredEvents, -$since, $since, true));
+        }
+
+        // Filter by date
+        $result = [];
+        foreach ($filteredEvents as $event) {
+            if ($event->occurredOn() >= $since) {
+                $result[] = $event;
+            }
+        }
+
+        return $result;
     }
 }
