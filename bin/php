@@ -1,9 +1,15 @@
-#!/bin/sh
+#!/bin/bash
+
+if [ -t 0 ] ; then
+    moinsit='-it'
+else
+    moinsit=''
+fi
 
 docker run \
     --init \
     --rm \
-    -ti \
+    $moinsit \
     --name php-ddd-event-running-script \
     -v "$(pwd)/bin/docker/php/php.ini:/usr/local/etc/php/php.ini" \
     -v "$PWD":"$PWD" \

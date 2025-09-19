@@ -21,34 +21,24 @@ class StoreEventInDatabaseTest extends TestCase
         $this->store = new StoreEventInDatabase($this->pdo, 'test_events');
     }
 
-    public function testTableCreation(): void
-    {
-                // Table should be created automatically
-        $stmt = $this->pdo->query("SELECT name FROM sqlite_master WHERE type='table' AND name='test_events'");
-
-        if ($stmt === false) {
-            $this->fail('Failed to execute query');
-        }
-
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        $this->assertIsArray($result);
-        $this->assertEquals('test_events', $result['name']);
-    }
-
     public function testAppendAndRetrieve(): void
     {
+        // Arrange
         $event = new EventSent("database_test");
         $this->store->append($event);
 
+        // Act
         $events = $this->store->allStoredEventsSince(1);
 
         $this->assertEquals(1, count($events));
         $this->assertStringContainsString('database_test', $events[0]->getEventBody());
+        $this->assertEquals(1, $this->store->lastEvent()->eventId());
+        $this->assertEquals($this->pdo, $this->store->getPdo());
     }
 
     public function testGetEventsByType(): void
     {
+        // Arrange
         $event1 = new EventSent("sent1");
         $event2 = new EventSent("sent2");
         $event3 = new AnotherDatabaseEvent("other");
@@ -57,21 +47,28 @@ class StoreEventInDatabaseTest extends TestCase
         $this->store->append($event2);
         $this->store->append($event3);
 
+        // Act
         $sentEvents = $this->store->getEventsByType(EventSent::class);
+        $anotherEvents = $this->store->getEventsByType(AnotherDatabaseEvent::class);
 
         $this->assertEquals(2, count($sentEvents));
         $this->assertStringContainsString('sent1', $sentEvents[0]->getEventBody());
         $this->assertStringContainsString('sent2', $sentEvents[1]->getEventBody());
+        $this->assertEquals(1, count($anotherEvents));
+        $this->assertStringContainsString('other', $anotherEvents[0]->getEventBody());
     }
 
     public function testGetEventsByTypeWithCount(): void
     {
+        // Arrange
         for ($i = 1; $i <= 5; $i++) {
             $this->store->append(new EventSent("event{$i}"));
         }
 
+        // Act
         $lastThree = $this->store->getEventsByType(EventSent::class, 3);
 
+        // Assert
         $this->assertEquals(3, count($lastThree));
         $this->assertStringContainsString('event3', $lastThree[0]->getEventBody());
         $this->assertStringContainsString('event4', $lastThree[1]->getEventBody());
@@ -80,6 +77,7 @@ class StoreEventInDatabaseTest extends TestCase
 
     public function testGetEventsByTypeWithDate(): void
     {
+        // Arrange
         $baseTime = new \DateTimeImmutable('2023-01-01 10:00:00');
 
         $event1 = new EventSent("old", $baseTime);
@@ -88,26 +86,34 @@ class StoreEventInDatabaseTest extends TestCase
         $this->store->append($event1);
         $this->store->append($event2);
 
+        // Act
         $recentEvents = $this->store->getEventsByType(
             EventSent::class,
             $baseTime->modify('+1 hour')
         );
 
+        // Assert
         $this->assertEquals(1, count($recentEvents));
         $this->assertStringContainsString('new', $recentEvents[0]->getEventBody());
     }
 
     public function testAllStoredEventsSinceZeroReturnsEmpty(): void
     {
+        // Arrange
         for ($i = 1; $i <= 3; $i++) {
             $this->store->append(new EventSent("db{$i}"));
         }
+
+        // Act
         $events = $this->store->allStoredEventsSince(0);
+
+        // Assert
         $this->assertCount(0, $events);
     }
 
     public function testGetEventsByTypeSinceDateOrderAndCount(): void
     {
+        // Arrange
         $baseTime = new \DateTimeImmutable('2023-01-01 10:00:00');
 
         $e1 = new EventSent('a', $baseTime);
@@ -118,9 +124,11 @@ class StoreEventInDatabaseTest extends TestCase
         $this->store->append($e2);
         $this->store->append($e3);
 
+        // Act
         $since = $baseTime->modify('+30 seconds');
         $events = $this->store->getEventsByType(EventSent::class, $since);
 
+        // Assert
         // Should return e2 then e3 in ascending order by event_id
         $this->assertCount(2, $events);
         $this->assertStringContainsString('b', $events[0]->getEventBody());
@@ -151,12 +159,6 @@ class StoreEventInDatabaseTest extends TestCase
         $this->store->getEventsByType(EventSent::class, -1);
     }
 
-    public function testGetPdo(): void
-    {
-        $pdo = $this->store->getPdo();
-        $this->assertSame($this->pdo, $pdo);
-    }
-
     public function testGetTableName(): void
     {
         $tableName = $this->store->getTableName();
@@ -172,10 +174,10 @@ class StoreEventInDatabaseTest extends TestCase
                 // Verify table was created with custom name
         $stmt = $this->pdo->query("SELECT name FROM sqlite_master WHERE type='table' AND name='custom_events'");
 
-        if ($stmt !== false) {
-            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-            $this->assertIsArray($result);
-        }
+        // Assert
+        $this->assertNotFalse($stmt);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $this->assertIsArray($result);
     }
 
     public function testDefaultTableName(): void
@@ -199,6 +201,7 @@ class StoreEventInDatabaseTest extends TestCase
 
     public function testMultipleAppendsWithAutoIncrement(): void
     {
+        // Arrange
         $events = [];
         for ($i = 1; $i <= 10; $i++) {
             $event = new EventSent("event{$i}");
@@ -206,9 +209,11 @@ class StoreEventInDatabaseTest extends TestCase
             $events[] = $event;
         }
 
+        // Act
         $storedEvents = $this->store->allStoredEventsSince(10);
-        $this->assertEquals(10, count($storedEvents));
 
+        // Assert
+        $this->assertEquals(10, count($storedEvents));
         // Verify IDs are incremental
         for ($i = 1; $i < count($storedEvents); $i++) {
             $this->assertGreaterThan(
@@ -238,43 +243,62 @@ class StoreEventInDatabaseTest extends TestCase
 
     public function testGetEventsSinceDateWithInvalidParameters(): void
     {
-        // Test uncovered PDO execution paths
+        // Arrange
         $event = new EventSent("test_event");
         $this->store->append($event);
 
+        // Act
         $since = new \DateTimeImmutable('2020-01-01');
         $events = $this->store->allStoredEventsSince($since);
 
+        // Assert
         // This should work and return events
         $this->assertNotEmpty($events);
 
+        // Act
         // Test with future date - should return empty
         $futureDate = new \DateTimeImmutable('2030-01-01');
         $events = $this->store->allStoredEventsSince($futureDate);
+
+        // Assert
         $this->assertEmpty($events);
     }
 
     public function testSerializationErrorHandling(): void
     {
-        // Test the uncovered throw statement in StoredEvent
+        // Arrange
         $problematicEvent = new class extends \Phariscope\Event\Psr14\Event {
             public function __construct()
             {
                 parent::__construct(new \DateTimeImmutable());
             }
 
-            // Override serialization to force empty result
             public function jsonSerialize(): mixed
             {
                 return null; // This should trigger empty result
             }
         };
 
+        // Act
         try {
             new \Phariscope\EventStore\StoredEvent($problematicEvent);
             $this->fail('Expected RuntimeException for empty serialization');
         } catch (\RuntimeException $e) {
             $this->assertStringContainsString('Failed to serialize event', $e->getMessage());
         }
+    }
+
+    public function testLastEventFailedToExecuteQuery(): void
+    {
+        // Arrange
+        $event = new EventSent("test");
+        $pdo = $this->createMock(\PDO::class);
+        $pdo->method('query')->willReturn(false);
+        $store = new StoreEventInDatabase($pdo);
+
+        // Act
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Failed to execute query');
+        $store->lastEvent();
     }
 }

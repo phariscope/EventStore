@@ -34,7 +34,7 @@ class StoreEventInDatabase implements StoreInterface
 
     public function append(Event $event): void
     {
-        $storedEvent = new StoredEvent($event);
+        $storedEvent = new StoredEvent($event, $this->getNextEventId());
 
         $sql = "INSERT INTO {$this->tableName} (event_id, event_body, type_name, occurred_on) 
                 VALUES (:event_id, :event_body, :type_name, :occurred_on)";
@@ -272,5 +272,19 @@ class StoreEventInDatabase implements StoreInterface
     public function getTableName(): string
     {
         return $this->tableName;
+    }
+
+    public function getNextEventId(): int
+    {
+        $sql = "SELECT MAX(event_id) + 1 FROM {$this->tableName}";
+        $stmt = $this->pdo->query($sql);
+        if ($stmt === false) {
+            throw new \RuntimeException('Failed to execute query $sql');
+        }
+        $value =  $stmt->fetchColumn();
+        if ($value === null) {
+            return 1;
+        }
+        return (int)$value;
     }
 }

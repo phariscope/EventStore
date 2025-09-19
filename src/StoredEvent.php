@@ -27,7 +27,7 @@ class StoredEvent extends Event
         ?int $id = null
     ) {
         if ($id !== null && $id <= 0) {
-            throw new \InvalidArgumentException('Event ID must be a positive integer');
+            throw new \InvalidArgumentException('Event ID must be a positive integer, got ' . $id);
         }
 
         parent::__construct($eventAbstract->occurredOn());
