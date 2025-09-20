@@ -1,5 +1,8 @@
 # Changelog - EventStore Enhancements
 
+## Version 2.0.3 - Data Source Name
+- add : DSN replace store_path
+
 ## Version 2.0.2 - Code Quality Improvements
 
 ### 🔧 **Improvements**
