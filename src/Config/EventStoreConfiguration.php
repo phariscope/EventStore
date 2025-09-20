@@ -7,11 +7,11 @@ use Symfony\Component\Yaml\Yaml;
 
 class EventStoreConfiguration
 {
-    /** @var array{sqlite_path?: string, table_name?: string} */
+    /** @var array{dsn?: string, table_name?: string} */
     private array $config;
 
     /**
-     * @param array{sqlite_path?: string, table_name?: string} $config
+     * @param array{dsn?: string, table_name?: string} $config
      */
     private function __construct(array $config)
     {
@@ -35,17 +35,17 @@ class EventStoreConfiguration
             );
         }
 
-        /** @var array{sqlite_path?: string, table_name?: string} $config */
+        /** @var array{dsn?: string, table_name?: string} $config */
         $config = $parsed['event_store'];
         return new self($config);
     }
 
-    public function getSqlitePath(): string
+    public function getDsn(): string
     {
-        $path = $this->config['sqlite_path'] ?? null;
+        $path = $this->config['dsn'] ?? null;
         if (!is_string($path) || $path === '') {
             throw new \InvalidArgumentException(
-                'Configuration key "event_store.sqlite_path" must be a non-empty string.'
+                'Configuration key "event_store.dsn" must be a non-empty string.'
             );
         }
         // Allow env expansion like ${DATA_PATH}/events.sqlite or %env(DATA_PATH)%/events.sqlite
@@ -65,7 +65,7 @@ class EventStoreConfiguration
 
     public function createSubscriber(): PersistEventInDatabaseSubscriber
     {
-        $pdo = new \PDO('sqlite:' . $this->getSqlitePath());
+        $pdo = new \PDO($this->getDsn());
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
         return new PersistEventInDatabaseSubscriber($pdo, $this->getTableName());

@@ -22,7 +22,7 @@ class EventStoreBundleTest extends TestCase
         // 1. Charger l'extension pour enregistrer les services
         $extension = $sut->getContainerExtension();
         $this->assertNotNull($extension);
-        $extension->load([['sqlite_path' => ':memory:', 'table_name' => 'events']], $container);
+        $extension->load([['dsn' => 'sqlite::memory:', 'table_name' => 'events']], $container);
 
         // 2. Construire le bundle (ajoute le compiler pass)
         $sut->build($container);

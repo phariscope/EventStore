@@ -24,7 +24,7 @@ class ConfigurationTest extends TestCase
         $root = $tree->getRootNode();
         $this->assertInstanceOf(ArrayNodeDefinition::class, $root);
         $children = $root->getChildNodeDefinitions();
-        $this->assertArrayHasKey('sqlite_path', $children);
+        $this->assertArrayHasKey('dsn', $children);
         $this->assertArrayHasKey('table_name', $children);
     }
 
@@ -36,11 +36,11 @@ class ConfigurationTest extends TestCase
 
         // Act
         $config = $processor->processConfiguration($sut, [
-            ['sqlite_path' => '/tmp/test.db', 'table_name' => 'events']
+            ['dsn' => 'sqlite:////tmp/test.db', 'table_name' => 'events']
         ]);
 
         // Assert
-        $this->assertEquals('/tmp/test.db', $config['sqlite_path']);
+        $this->assertEquals('sqlite:////tmp/test.db', $config['dsn']);
         $this->assertEquals('events', $config['table_name']);
     }
 
@@ -52,11 +52,11 @@ class ConfigurationTest extends TestCase
 
         // Act
         $config = $processor->processConfiguration($sut, [
-            ['sqlite_path' => '/tmp/test.db'] // Seul sqlite_path est fourni
+            ['dsn' => 'sqlite:////tmp/test.db'] // Seul dsn est fourni
         ]);
 
         // Assert
-        $this->assertEquals('/tmp/test.db', $config['sqlite_path']);
+        $this->assertEquals('sqlite:////tmp/test.db', $config['dsn']);
         $this->assertEquals('stored_events', $config['table_name']); // Valeur par défaut
     }
 
@@ -69,13 +69,13 @@ class ConfigurationTest extends TestCase
 
         // Act
         $config = $processor->processConfiguration($sut, [
-            ['sqlite_path' => '${TEST_DB_PATH}', 'table_name' => 'events']
+            ['dsn' => 'sqlite://${TEST_DB_PATH}', 'table_name' => 'events']
         ]);
 
         // Assert
-        $this->assertEquals('${TEST_DB_PATH}', $config['sqlite_path']);
-        $expandedPath = Environment::expand(strval($config['sqlite_path']));
-        $this->assertEquals('/var/lib/test.sqlite', $expandedPath);
+        $this->assertEquals('sqlite://${TEST_DB_PATH}', $config['dsn']);
+        $expandedPath = Environment::expand(strval($config['dsn']));
+        $this->assertEquals('sqlite:///var/lib/test.sqlite', $expandedPath);
 
         // Clean up
         unset($_ENV['TEST_DB_PATH']);
@@ -90,13 +90,13 @@ class ConfigurationTest extends TestCase
 
         // Act
         $config = $processor->processConfiguration($sut, [
-            ['sqlite_path' => '%env(DATABASE_PATH)%']
+            ['dsn' => 'sqlite:///%env(DATABASE_PATH)%']
         ]);
 
         // Assert
-        $this->assertEquals('%env(DATABASE_PATH)%', $config['sqlite_path']);
-        $expandedPath = Environment::expand(strval($config['sqlite_path']));
-        $this->assertEquals('/opt/data/app.db', $expandedPath);
+        $this->assertEquals('sqlite:///%env(DATABASE_PATH)%', $config['dsn']);
+        $expandedPath = Environment::expand(strval($config['dsn']));
+        $this->assertEquals('sqlite:////opt/data/app.db', $expandedPath);
 
         // Cleanup
         unset($_ENV['DATABASE_PATH']);

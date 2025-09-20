@@ -17,7 +17,7 @@ class EventStoreExtensionTest extends TestCase
         // Arrange
         $sut = new EventStoreExtension();
         $config = [
-            'sqlite_path' => ':memory:',
+            'dsn' => 'sqlite::memory:',
             'table_name' => 'test_events',
         ];
 

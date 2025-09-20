@@ -38,11 +38,11 @@ class EventStoreExtension extends Extension
      */
     private function buildPdoDefinitionWithEnnvironnementVariablesPresentInConfig(array $config): Definition
     {
-        $sqlitePathRaw = $config['sqlite_path'] ?? '';
-        $sqlitePath = \Phariscope\EventStore\Util\Environment::expand(is_string($sqlitePathRaw) ? $sqlitePathRaw : '');
+        $dsn = $config['dsn'] ?? '';
+        $dsn = \Phariscope\EventStore\Util\Environment::expand(is_string($dsn) ? $dsn : '');
 
         $pdoDef = new Definition(\PDO::class);
-        $pdoDef->setArguments(['sqlite:' . $sqlitePath]);
+        $pdoDef->setArguments([$dsn]);
         $pdoDef->addMethodCall('setAttribute', [\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION]);
         return $pdoDef;
     }

@@ -30,7 +30,7 @@ class EventStoreConfigurationTest extends TestCase
         // Arrange
         $yaml = <<<YAML
 event_store:
-  sqlite_path: ":memory:"
+  dsn: "sqlite::memory:"
   table_name: "test_events"
 YAML;
         file_put_contents($this->tmpFile, $yaml);
@@ -62,17 +62,17 @@ YAML;
         // Arrange
         $yaml = <<<YAML
 event_store:
-  sqlite_path: ""
+  dsn: ""
 YAML;
         file_put_contents($this->tmpFile, $yaml);
         $config = EventStoreConfiguration::fromFile($this->tmpFile);
 
         // Expect
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('sqlite_path');
+        $this->expectExceptionMessage('dsn');
 
         // Act
-        $config->getSqlitePath();
+        $config->getDsn();
     }
 
     public function testEnvExpansion(): void
@@ -80,7 +80,7 @@ YAML;
         // Arrange
         $yaml = <<<'YAML'
 event_store:
-  sqlite_path: "${DATA_PATH}/events.sqlite"
+  dsn: "sqlite:///${DATA_PATH}/events.sqlite"
   table_name: "test_events"
 YAML;
 
@@ -88,7 +88,7 @@ YAML;
 
         // Act
         $config = EventStoreConfiguration::fromFile($this->tmpFile);
-        $path = $config->getSqlitePath();
+        $path = $config->getDsn();
 
         // Assert
         $this->assertStringContainsString('/events.sqlite', $path);

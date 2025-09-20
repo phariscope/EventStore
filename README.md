@@ -69,7 +69,7 @@ Example `config/event_store.yaml`:
 
 ```yaml
 event_store:
-  sqlite_path: "/absolute/path/to/events.sqlite"  # or ":memory:" for in-memory
+  dsn: "sqlite:///absolute/path/to/events.sqlite"  # or ":memory:" for in-memory
   table_name: "stored_events"                      # optional (default: stored_events)
 ```
 
@@ -102,7 +102,7 @@ return [
 ```yaml
 # config/packages/event_store.yaml
 event_store:
-  sqlite_path: "/absolute/path/to/events.sqlite"  # or ":memory:"
+  dsn: "sqlite:///absolute/path/to/events.sqlite"  # or ":memory:"
   table_name: "stored_events"                      # optional
 ```
 

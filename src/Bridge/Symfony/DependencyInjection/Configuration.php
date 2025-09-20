@@ -19,13 +19,13 @@ class Configuration implements ConfigurationInterface
             /** @var NodeBuilder $children */
             $children = $rootNode->children();
 
-            /** @var ScalarNodeDefinition $sqlite */
-            $sqlite = $children->scalarNode('sqlite_path');
-            $sqlite->isRequired()->cannotBeEmpty();
+            /** @var ScalarNodeDefinition $dsn */
+            $dsn = $children->scalarNode('dsn');
+            $dsn->isRequired()->cannotBeEmpty();
 
-            /** @var ScalarNodeDefinition $table */
-            $table = $children->scalarNode('table_name');
-            $table->defaultValue('stored_events')->cannotBeEmpty();
+            /** @var ScalarNodeDefinition $table_name */
+            $table_name = $children->scalarNode('table_name');
+            $table_name->defaultValue('stored_events')->cannotBeEmpty();
         }
 
         return $treeBuilder;
