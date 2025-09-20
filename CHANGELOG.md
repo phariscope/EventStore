@@ -1,5 +1,12 @@
 # Changelog - EventStore Enhancements
 
+## Version 2.0.2 - Code Quality Improvements
+
+### 🔧 **Improvements**
+- **Environment class refactoring**: Improved code readability and maintainability
+
+---
+
 ## Version 2.0.0 - Complete Overhaul
 
 ### 🚀 **Major New Features**
