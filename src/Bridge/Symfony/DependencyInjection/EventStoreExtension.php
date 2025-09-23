@@ -4,6 +4,7 @@ namespace Phariscope\EventStore\Bridge\Symfony\DependencyInjection;
 
 use Phariscope\Event\EventDispatcher;
 use Phariscope\EventStore\Bridge\Symfony\EventListener\EventStoreBootListener;
+use Phariscope\EventStore\Bridge\Symfony\Factory\PdoFactory;
 use Phariscope\EventStore\Persistence\PersistEventInDatabaseSubscriber;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -21,12 +22,10 @@ class EventStoreExtension extends Extension
         /** @var array<string, mixed> $config */
         $config = $this->processConfiguration($configuration, $configs);
 
-        $pdoDef = $this->buildPdoDefinitionWithEnnvironnementVariablesPresentInConfig($config);
-
-        $container->setDefinition('phariscope_event_store.pdo', $pdoDef);
+        $this->registerPdoFactory($container, $config);
 
         $tableName = $config['table_name'] ?? '';
-        $this->registerSubscriber($container, $pdoDef, is_string($tableName) ? $tableName : '');
+        $this->registerSubscriber($container, is_string($tableName) ? $tableName : '');
 
         $this->registerBootListenerThatManageEventRecords($container);
 
@@ -36,21 +35,26 @@ class EventStoreExtension extends Extension
     /**
      * @param array<string, mixed> $config
      */
-    private function buildPdoDefinitionWithEnnvironnementVariablesPresentInConfig(array $config): Definition
+    private function registerPdoFactory(ContainerBuilder $container, array $config): void
     {
         $dsn = $config['dsn'] ?? '';
-        $dsn = \Phariscope\EventStore\Util\Environment::expand(is_string($dsn) ? $dsn : '');
+        $dsnTemplate = is_string($dsn) ? $dsn : '';
 
+        // Enregistrer la factory
+        $factoryDef = new Definition(PdoFactory::class);
+        $factoryDef->setArguments([$dsnTemplate]);
+        $container->setDefinition('phariscope_event_store.pdo_factory', $factoryDef);
+
+        // Enregistrer le service PDO qui utilise la factory
         $pdoDef = new Definition(\PDO::class);
-        $pdoDef->setArguments([$dsn]);
-        $pdoDef->addMethodCall('setAttribute', [\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION]);
-        return $pdoDef;
+        $pdoDef->setFactory([new Reference('phariscope_event_store.pdo_factory'), 'createPdo']);
+        $container->setDefinition('phariscope_event_store.pdo', $pdoDef);
     }
 
-    private function registerSubscriber(ContainerBuilder $container, Definition $pdoDef, string $tableName): void
+    private function registerSubscriber(ContainerBuilder $container, string $tableName): void
     {
         $subscriberDef = new Definition(PersistEventInDatabaseSubscriber::class);
-        $subscriberDef->setArguments([$pdoDef, $tableName]);
+        $subscriberDef->setArguments([new Reference('phariscope_event_store.pdo'), $tableName]);
         $container->setDefinition('phariscope_event_store.subscriber', $subscriberDef);
     }
 
