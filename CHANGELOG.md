@@ -1,5 +1,27 @@
 # Changelog - EventStore Enhancements
 
+## Version 2.1.0 - Symfony 8 support
+
+### Added
+
+- Support for **Symfony 8** alongside existing Symfony **6.4** LTS and **7.x** for direct dependencies: `symfony/serializer`, `symfony/yaml`, `symfony/http-kernel`, `symfony/dependency-injection`, `symfony/config`.
+- **GitHub Actions** CI with a PHP × Symfony matrix (Symfony 6.4 / 7.4 / 8.0 lines; Symfony 8 jobs use PHP 8.4 as required by the framework).
+
+### Compatibility
+
+- **Backward compatible** for existing consumers on Symfony 6 and 7: only Composer version ranges were widened; public API, service IDs, default YAML keys (`dsn`, `table_name`), and default SQL shape for `stored_events` are unchanged.
+- **Upgrade:** No action required for applications on Symfony 6 or 7 beyond bumping this package to `2.1.x` if you only need Composer conflict resolution.
+
+### Composer
+
+- `symfony/serializer`: `^6.0 || ^7.0 || ^8.0` (6.0 floor preserved).
+- `symfony/yaml`, `symfony/http-kernel`, `symfony/dependency-injection`, `symfony/config`: `^6.4 || ^7.0 || ^8.0` (adds 6.4 LTS and 8.x; previously `^7.0` only for these four).
+- **require-dev:** `sanmai/later` and `sanmai/pipeline` are constrained so Infection’s dependency tree remains installable on **PHP 8.1** (dev tooling only; runtime `php` requirement stays `>=8.1`).
+
+### Tests
+
+- Stabilized tests that depended on the default timezone or sub-millisecond timing so they behave consistently across PHP/Symfony versions and CI.
+
 ## Version 2.0.3 - Data Source Name
 - add : DSN replace store_path
 

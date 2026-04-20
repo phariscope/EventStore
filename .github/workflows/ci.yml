@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php-version: "8.1"
+            symfony: "6.4.*"
+          - php-version: "8.2"
+            symfony: "6.4.*"
+          - php-version: "8.2"
+            symfony: "7.4.*"
+          - php-version: "8.4"
+            symfony: "7.4.*"
+          - php-version: "8.4"
+            symfony: "8.0.*"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, pdo_sqlite, zip
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --no-check-publish
+
+      - name: Install Composer dependencies (pinned Symfony line)
+        run: bash bin/ci-pin-symfony-version.sh "${{ matrix.symfony }}"
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit

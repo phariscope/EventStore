@@ -14,7 +14,11 @@ class StoredEventTest extends TestCase
 {
     public function testCreateStoredEvent(): void
     {
-        $date = DateTimeImmutable::createFromFormat("Y-m-d H:i:s", "2023-09-25 11:24:56");
+        $date = DateTimeImmutable::createFromFormat(
+            "Y-m-d H:i:s",
+            "2023-09-25 11:24:56",
+            new \DateTimeZone('Europe/Paris')
+        );
 
         $event = new EventSent("aId", $date->getInnerDateTime());
         $storedEvent = new StoredEvent($event, 1);

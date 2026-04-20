@@ -4,6 +4,16 @@
 composer require phariscope/event-store
 ```
 
+## Supported versions
+
+| | Supported |
+| --- | --- |
+| **PHP** | `>=8.1` (Symfony 8 requires PHP `>=8.4` on the application side; Composer will resolve accordingly) |
+| **Symfony** (`config`, `dependency-injection`, `http-kernel`, `serializer`, `yaml`) | 6.4 LTS, 7.x, and 8.x per `composer.json` |
+| **phariscope/event** | `>=1.2` (1.2.x is the reference line used in CI) |
+
+Continuous integration runs PHPUnit against Symfony **6.4**, **7.4**, and **8.0** lines (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+
 # Usage
 
 There is no direct usage for this package. You should use this package only if you want to develop your own event storage component.

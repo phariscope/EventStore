@@ -148,6 +148,7 @@ class EventStoreMetricsTest extends TestCase
     public function testHighEventCount(): void
     {
         $operationId = $this->metrics->startOperation('bulk_test');
+        usleep(1000); // ensure duration > 0 so throughput is defined on fast runtimes
         $this->metrics->endOperation($operationId, 1000);
 
         $report = $this->metrics->getPerformanceReport();
